@@ -174,6 +174,7 @@ and typecheck_expression (cenv : class_env) (venv : variable_env) (vinit : S.t)
         | OpMul -> TypInt, TypInt
         | OpLt  -> TypInt, TypBool
         | OpGt  -> TypInt, TypBool
+        | OpEq  -> TypInt, TypBool
         | OpAnd -> TypBool, TypBool
       in
       let e1' = typecheck_expression_expecting cenv venv vinit instanceof expected e1 in
