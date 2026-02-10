@@ -37,6 +37,9 @@ and binop =
   | OpEq  (** Binary operator [==]. *)
   | OpAnd (** Binary operator [&&]. *)
   | OpOr  (** Binary operator [||]. *)
+  | OpOrBitwise (** Binary operator [|]. *)
+  | OpXor (** Binary operator [^]. *)
+  | OpAndBitwise (** Binary operator [&]. *)
 
 and unop = UOpNot (** Unary operator [!]. *)
 

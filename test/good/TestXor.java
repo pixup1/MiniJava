@@ -1,0 +1,9 @@
+class TestXor {
+    public static void main(String[] args) {
+        if ( (1 ^ 0) == 1){
+            System.out.println(1);
+        }else {
+            System.out.println(0);   
+        }
+    }
+}

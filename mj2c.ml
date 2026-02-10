@@ -306,6 +306,9 @@ let binop2c
   | OpEq  -> fprintf out "=="
   | OpAnd -> fprintf out "&&" 
   | OpOr  -> fprintf out "||"
+  | OpOrBitwise -> fprintf out "|"
+  | OpXor -> fprintf out "^"
+  | OpAndBitwise -> fprintf out "&"
 
 (** [type2c out typ] transpiles the type [typ] to C on the output channel [out]. *)
 let type2c
