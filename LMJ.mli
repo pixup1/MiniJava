@@ -35,13 +35,19 @@ and binop =
   | OpLt  (** Binary operator [<]. *)
   | OpGt  (** Binary operator [>]. *)
   | OpEq  (** Binary operator [==]. *)
+  | OpNeq (** Binary operator [!=]. *)
   | OpAnd (** Binary operator [&&]. *)
   | OpOr  (** Binary operator [||]. *)
   | OpOrBitwise (** Binary operator [|]. *)
   | OpXor (** Binary operator [^]. *)
   | OpAndBitwise (** Binary operator [&]. *)
+  | OpShiftRightBitewise (** Binary operator [>>]. *)
+  | OpShiftLeftBitwise (** Binary operator [<<]. *)
 
-and unop = UOpNot (** Unary operator [!]. *)
+and unop = 
+  | UOpNot (** Unary operator [!]. *)
+  | UOpIncPre (** Unary operator [++e]. *)
+  | UOpIncPost (** Unary operator [e++]. *)
 
 and instruction =
   | IBlock of instruction list (** [IBlock [i1; i2; ...; in]] represents the instruction [{ i1 i2 ... in }]. *)

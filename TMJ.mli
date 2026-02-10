@@ -30,13 +30,19 @@ and binop = LMJ.binop =
   | OpLt
   | OpGt
   | OpEq
+  | OpNeq
   | OpAnd
   | OpOr
   | OpOrBitwise
   | OpXor
   | OpAndBitwise
+  | OpShiftRightBitewise
+  | OpShiftLeftBitwise
 
-and unop = LMJ.unop = UOpNot
+and unop = LMJ.unop = 
+  | UOpNot
+  | UOpIncPre
+  | UOpIncPost
 
 and instruction =
   | IBlock of instruction list

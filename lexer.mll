@@ -32,9 +32,12 @@ rule get_token = parse
   | '%'       { MOD }
   | "&&"      { AND }
   | "||"      { OR }
+  | ">>"      { OPSHIFTRIGHT }
+  | "<<"      { OPSHIFTLEFT }
   | "<"       { LT }
   | ">"       { GT }
   | "=="      { EQ }
+  | "!="      { NEQ }
   | '|'       { ORBITWISE }
   | '^'       { XOR }
   | '&'       { ANDBITWISE }

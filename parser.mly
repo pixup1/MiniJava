@@ -8,7 +8,7 @@
 %token INTEGER BOOLEAN
 %token <string Location.t> IDENT
 %token CLASS PUBLIC STATIC VOID MAIN STRING EXTENDS RETURN
-%token PLUS MINUS TIMES DIV MOD NOT LT GT EQ AND OR ORBITWISE XOR ANDBITWISE
+%token PLUS MINUS TIMES DIV MOD NOT LT GT EQ NEQ AND OR ORBITWISE XOR ANDBITWISE OPSHIFTLEFT OPSHIFTRIGHT 
 %token COMMA SEMICOLON
 %token ASSIGN
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
@@ -17,10 +17,10 @@
 %token IF ELSE WHILE
 %token EOF
 
-%left AND OR ORBITWISE XOR ANDBITWISE
-%nonassoc EQ
+%left AND OR ORBITWISE XOR ANDBITWISE OPSHIFTLEFT OPSHIFTRIGHT 
+%nonassoc EQ NEQ
 %nonassoc LT GT
-%left PLUS MINUS
+%left PLUS MINUS 
 %left TIMES DIV MOD
 %nonassoc NOT
 %nonassoc DOT LBRACKET
@@ -151,11 +151,14 @@ raw_expression:
 | LT    { OpLt }
 | GT    { OpGt }
 | EQ    { OpEq }
+| NEQ   { OpNeq }
 | AND   { OpAnd }
 | OR    { OpOr }
 | ORBITWISE { OpOrBitwise }
 | XOR   { OpXor }
 | ANDBITWISE { OpAndBitwise }
+| OPSHIFTLEFT { OpShiftLeftBitwise }
+| OPSHIFTRIGHT { OpShiftRightBitewise }
 
 instruction:
 | b = block
