@@ -30,10 +30,13 @@ and binop =
   | OpAdd (** Binary operator [+]. *)
   | OpSub (** Binary operator [-]. *)
   | OpMul (** Binary operator [*]. *)
+  | OpDiv (** Binary operator [/]. *)
+  | OpMod (** Binary operator [%]. *)
   | OpLt  (** Binary operator [<]. *)
   | OpGt  (** Binary operator [>]. *)
   | OpEq  (** Binary operator [==]. *)
   | OpAnd (** Binary operator [&&]. *)
+  | OpOr  (** Binary operator [||]. *)
 
 and unop = UOpNot (** Unary operator [!]. *)
 
