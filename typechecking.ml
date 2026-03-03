@@ -162,8 +162,7 @@ and typecheck_expression (cenv : class_env) (venv : variable_env) (vinit : S.t)
       let expected, returned =
         match op with
         | UOpNot -> TypBool, TypBool
-        | UOpIncPre -> TypInt, TypInt
-        | UOpIncPost -> TypInt, TypInt
+
       in
       let e' = typecheck_expression_expecting cenv venv vinit instanceof expected e in
       mke (TMJ.EUnOp (op, e')) returned
@@ -187,7 +186,6 @@ and typecheck_expression (cenv : class_env) (venv : variable_env) (vinit : S.t)
         | OpAndBitwise -> TypInt, TypInt
         | OpShiftRightBitewise -> TypInt, TypInt
         | OpShiftLeftBitwise -> TypInt, TypInt
-        | OpShiftRightZeroFillBitwise -> TypInt, TypInt
       in
       let e1' = typecheck_expression_expecting cenv venv vinit instanceof expected e1 in
       let e2' = typecheck_expression_expecting cenv venv vinit instanceof expected e2 in
@@ -215,6 +213,18 @@ and typecheck_expression (cenv : class_env) (venv : variable_env) (vinit : S.t)
   | EObjectAlloc id ->
       clookup id cenv |> ignore;
       mke (TMJ.EObjectAlloc (Location.content id)) (Typ id)
+  
+  | EIncPre id ->
+      let typ = vlookup id venv in
+      if not (compatible typ TypInt instanceof) then
+        error id (sprintf "The operator ++ can only be applied to integers, got %s" (type_to_string typ));
+      mke (TMJ.EIncPre (Location.content id)) TypInt
+
+  | EIncPost id ->
+      let typ = vlookup id venv in
+      if not (compatible typ TypInt instanceof) then  
+        error id (sprintf "The operator ++ can only be applied to integers, got %s" (type_to_string typ));
+      mke (TMJ.EIncPost (Location.content id)) TypInt
 
 (** [typecheck_instruction cenv venv vinit instanceof inst] checks, using the environments [cenv] and
     [venv], the set of initialized variables [vinit] and the [instanceof] function,

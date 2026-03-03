@@ -16,6 +16,8 @@ and raw_expression =
   | EArrayLength of expression
   | EThis
   | EObjectAlloc of identifier
+  | EIncPre of identifier
+  | EIncPost of identifier
 
 and constant = LMJ.constant =
   | ConstBool of bool
@@ -41,8 +43,6 @@ and binop = LMJ.binop =
 
 and unop = LMJ.unop = 
   | UOpNot
-  | UOpIncPre
-  | UOpIncPost
 
 and instruction =
   | IBlock of instruction list

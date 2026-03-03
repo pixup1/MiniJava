@@ -312,7 +312,6 @@ let binop2c
   | OpAndBitwise -> fprintf out "&"
   | OpShiftRightBitewise -> fprintf out ">>"
   | OpShiftLeftBitwise -> fprintf out "<<"
-  | OpShiftRightZeroFillBitwise -> fprintf out ">>>"
 
 (** [type2c out typ] transpiles the type [typ] to C on the output channel [out]. *)
 let type2c

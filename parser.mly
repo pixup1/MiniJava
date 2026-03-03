@@ -94,6 +94,12 @@ metho:
    }
 
 declarations_and_statements:
+| t = typ id = IDENT ASSIGN e = expression SEMICOLON r = declarations_and_statements
+    {
+      let d, s = r in
+      ((id, t) :: d,
+       ISetVar(id, e) :: s)
+    }
 | t = typ id = IDENT SEMICOLON r = declarations_and_statements
    {
      let d, s = r in
@@ -141,6 +147,13 @@ raw_expression:
 
 | NOT e = expression
    { EUnOp (UOpNot, e) }
+
+| id = IDENT PLUS PLUS
+   { EIncPre id } 
+
+| PLUS PLUS id = IDENT
+   { EIncPost id }
+
 
 %inline binop:
 | PLUS  { OpAdd }

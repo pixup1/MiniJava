@@ -21,6 +21,8 @@ and raw_expression =
   | EArrayLength of expression (** [EArrayLength e] represents the expression [e.length]. *)
   | EThis (** [EThis] represents the expression [this]. *)
   | EObjectAlloc of identifier (** [EObjectAlloc id] represents the expression [new id()]. *)
+  | EIncPre of identifier (** [EIncPre id] represents the expression [++id]. *)
+  | EIncPost of identifier (** [EIncPost id] represents the expression [id++]. *)
 
 and constant =
   | ConstBool of bool (** Boolean constant [true] or [false]. *)
@@ -46,8 +48,6 @@ and binop =
 
 and unop = 
   | UOpNot (** Unary operator [!]. *)
-  | UOpIncPre (** Unary operator [++e]. *)
-  | UOpIncPost (** Unary operator [e++]. *)
 
 and instruction =
   | IBlock of instruction list (** [IBlock [i1; i2; ...; in]] represents the instruction [{ i1 i2 ... in }]. *)
