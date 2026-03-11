@@ -438,6 +438,17 @@ let expr2c
          expr2c e1
          binop2c op
          expr2c e2
+
+    | EIncPre v ->
+    var2c method_name class_info out v;
+    fprintf out " = %a + 1" (var2c method_name class_info) v
+
+  | EIncPost v ->
+      fprintf out "({ int %s = " !name1;
+      var2c method_name class_info out v;
+      fprintf out "; ";
+      var2c method_name class_info out v;
+      fprintf out " = %s + 1; %s; })" !name1 !name1
   in
   expr2c out expr
 
@@ -485,6 +496,9 @@ let instr2c
     | ISyso e ->
        fprintf out "printf(\"%%d\\n\", %a);"
          (expr2c method_name class_info) e
+
+    | IExpr e ->
+        fprintf out "%a;" (expr2c method_name class_info) e
   in
   instr2c out ins
 

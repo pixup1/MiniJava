@@ -51,6 +51,7 @@ and instruction =
   | ISyso of expression
   | ISetVar of identifier * typ * expression
   | IArraySet of identifier * expression * expression
+  | IExpr of expression
 
 and typ =
   | TypInt

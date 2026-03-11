@@ -9,6 +9,7 @@
 %token <string Location.t> IDENT
 %token CLASS PUBLIC STATIC VOID MAIN STRING EXTENDS RETURN
 %token PLUS MINUS TIMES DIV MOD NOT LT GT EQ NEQ AND OR ORBITWISE XOR ANDBITWISE OPSHIFTLEFT OPSHIFTRIGHT 
+%token INC
 %token COMMA SEMICOLON
 %token ASSIGN
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
@@ -22,7 +23,7 @@
 %nonassoc LT GT
 %left PLUS MINUS 
 %left TIMES DIV MOD
-%nonassoc NOT
+%nonassoc NOT INC
 %nonassoc DOT LBRACKET
 
 %start program
@@ -148,11 +149,11 @@ raw_expression:
 | NOT e = expression
    { EUnOp (UOpNot, e) }
 
-| id = IDENT PLUS PLUS
-   { EIncPre id } 
+| id = IDENT INC
+   { EIncPost id } 
 
-| PLUS PLUS id = IDENT
-   { EIncPost id }
+| INC id = IDENT
+   { EIncPre id }
 
 
 %inline binop:
@@ -194,6 +195,9 @@ instruction:
 
 | WHILE LPAREN c = expression RPAREN i = instruction
    { IWhile (c, i) }
+
+| e = expression SEMICOLON
+   { IExpr e }
 
 block:
 | LBRACE is = list(instruction) RBRACE
