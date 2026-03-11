@@ -26,6 +26,11 @@ rule get_token = parse
   | space+    { get_token lexbuf }
   | "/*"      { comment lexbuf }
   | "++"      { INC }
+  | "+="      { ADDASSIGN }
+  | "-="      { SUBASSIGN }
+  | "*="      { MULASSIGN }
+  | "/="      { DIVASSIGN }
+  | "%="      { MODASSIGN }
   | '+'       { PLUS }
   | '-'       { MINUS }
   | '*'       { TIMES }

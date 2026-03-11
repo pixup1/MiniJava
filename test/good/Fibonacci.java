@@ -6,7 +6,7 @@ class Fibonacci {
 
 class Fibo {
     public int fibo(int n) {
-        int res;
+        int res = 0;
         if (n < 2) {
           res = n;
         } else {

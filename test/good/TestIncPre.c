@@ -14,8 +14,9 @@ void* (*TestIncPre_vtable[])() = { TestIncPre_test };
 void* TestIncPre_test(struct TestIncPre* this) {
   int x;
   x = 5;
-  x = x + 1;
-  return (void*)(x);
+  (x = x + 1);
+
+  return (void*)(intptr_t)(x);
 }
 int main(int argc, char *argv[]) {
   tgc_start(&gc, &argc);

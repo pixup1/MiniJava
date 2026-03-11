@@ -167,6 +167,86 @@ and typecheck_expression (cenv : class_env) (venv : variable_env) (vinit : S.t)
       let e' = typecheck_expression_expecting cenv venv vinit instanceof expected e in
       mke (TMJ.EUnOp (op, e')) returned
 
+  | EBinOp (OpAddAssign, e1, e2) ->
+    let e2' = typecheck_expression_expecting cenv venv vinit instanceof TypInt e2 in
+    begin match Location.content e1 with
+      | EGetVar v ->
+          (* e1 doit être initialisée *)
+          let _ = vlookup v venv in
+          mke (EBinOp (OpAddAssign, typecheck_expression cenv venv vinit instanceof e1, e2')) TypInt
+      | EArrayGet (arr, idx) ->
+          let arr' = typecheck_expression_expecting cenv venv vinit instanceof TypIntArray arr in
+          let idx' = typecheck_expression_expecting cenv venv vinit instanceof TypInt idx in
+          let arrget = mke (EArrayGet(arr', idx')) TypInt in
+          mke (EBinOp (OpAddAssign, arrget, e2')) TypInt
+      | _ ->
+          error e1 "Left-hand side of '+=' must be a variable or array element"
+    end
+
+    | EBinOp (OpSubAssign, e1, e2) ->
+      let e2' = typecheck_expression_expecting cenv venv vinit instanceof TypInt e2 in
+      begin match Location.content e1 with
+        | EGetVar v ->
+            (* e1 doit être initialisée *)
+            let _ = vlookup v venv in
+            mke (EBinOp (OpSubAssign, typecheck_expression cenv venv vinit instanceof e1, e2')) TypInt
+        | EArrayGet (arr, idx) ->
+            let arr' = typecheck_expression_expecting cenv venv vinit instanceof TypIntArray arr in
+            let idx' = typecheck_expression_expecting cenv venv vinit instanceof TypInt idx in
+            let arrget = mke (EArrayGet(arr', idx')) TypInt in
+            mke (EBinOp (OpSubAssign, arrget, e2')) TypInt
+        | _ ->
+            error e1 "Left-hand side of '-=' must be a variable or array element"
+      end
+
+    | EBinOp (OpMulAssign, e1, e2) ->
+      let e2' = typecheck_expression_expecting cenv venv vinit instanceof TypInt e2 in
+      begin match Location.content e1 with
+        | EGetVar v ->
+            (* e1 doit être initialisée *)
+            let _ = vlookup v venv in
+            mke (EBinOp (OpMulAssign, typecheck_expression cenv venv vinit instanceof e1, e2')) TypInt
+        | EArrayGet (arr, idx) ->
+            let arr' = typecheck_expression_expecting cenv venv vinit instanceof TypIntArray arr in
+            let idx' = typecheck_expression_expecting cenv venv vinit instanceof TypInt idx in
+            let arrget = mke (EArrayGet(arr', idx')) TypInt in
+            mke (EBinOp (OpMulAssign, arrget, e2')) TypInt
+        | _ ->
+            error e1 "Left-hand side of '*=' must be a variable or array element"
+      end
+
+    | EBinOp (OpDivAssign, e1, e2) ->
+      let e2' = typecheck_expression_expecting cenv venv vinit instanceof TypInt e2 in
+      begin match Location.content e1 with
+        | EGetVar v ->
+            (* e1 doit être initialisée *)
+            let _ = vlookup v venv in
+            mke (EBinOp (OpDivAssign, typecheck_expression cenv venv vinit instanceof e1, e2')) TypInt
+        | EArrayGet (arr, idx) ->
+            let arr' = typecheck_expression_expecting cenv venv vinit instanceof TypIntArray arr in
+            let idx' = typecheck_expression_expecting cenv venv vinit instanceof TypInt idx in
+            let arrget = mke (EArrayGet(arr', idx')) TypInt in
+            mke (EBinOp (OpDivAssign, arrget, e2')) TypInt
+        | _ ->
+            error e1 "Left-hand side of '/=' must be a variable or array element"
+      end
+
+    | EBinOp (OpModAssign, e1, e2) ->
+      let e2' = typecheck_expression_expecting cenv venv vinit instanceof TypInt e2 in
+      begin match Location.content e1 with
+        | EGetVar v ->
+            (* e1 doit être initialisée *)
+            let _ = vlookup v venv in
+            mke (EBinOp (OpModAssign, typecheck_expression cenv venv vinit instanceof e1, e2')) TypInt
+        | EArrayGet (arr, idx) ->
+            let arr' = typecheck_expression_expecting cenv venv vinit instanceof TypIntArray arr in
+            let idx' = typecheck_expression_expecting cenv venv vinit instanceof TypInt idx in
+            let arrget = mke (EArrayGet(arr', idx')) TypInt in
+            mke (EBinOp (OpModAssign, arrget, e2')) TypInt
+        | _ ->
+            error e1 "Left-hand side of '%=' must be a variable or array element"
+      end
+
   | EBinOp (op, e1, e2) ->
       let expected, returned =
         match op with
@@ -186,6 +266,11 @@ and typecheck_expression (cenv : class_env) (venv : variable_env) (vinit : S.t)
         | OpAndBitwise -> TypInt, TypInt
         | OpShiftRightBitewise -> TypInt, TypInt
         | OpShiftLeftBitwise -> TypInt, TypInt
+        | OpAddAssign -> TypInt, TypInt
+        | OpSubAssign -> TypInt, TypInt
+        | OpMulAssign -> TypInt, TypInt
+        | OpDivAssign -> TypInt, TypInt
+        | OpModAssign -> TypInt, TypInt
       in
       let e1' = typecheck_expression_expecting cenv venv vinit instanceof expected e1 in
       let e2' = typecheck_expression_expecting cenv venv vinit instanceof expected e2 in

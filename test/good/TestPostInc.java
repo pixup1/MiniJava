@@ -1,13 +1,13 @@
-class TestIncPre {
+class TestPostInc {
     public static void main(String[] args) {
-        System.out.println(new IncPre().test());
+        System.out.println(new PostInc().test());
     }
 }
 
-class IncPre {
+class PostInc {
     public int test() {
         int x = 5;
-        ++x;
+        x++;
         return x;
     }
 }

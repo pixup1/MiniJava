@@ -1,19 +1,19 @@
-class TestAffec {
+class TestMulAssign {
     public static void main(String[] args) {
-        System.out.println(new TestA().test());
+        System.out.println(new TestMulA().test());
     }
 }
 
-class TestA {
+class TestMulA {
     public int test() {
         int x = 5;
         int r;
-        if (x == 5){
+        x *= 3;
+        if (x == 15){
             r = 1;
         } else {
             r = 0;
         }
-
         return r;
     }
 }

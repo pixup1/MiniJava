@@ -8,7 +8,7 @@
 %token INTEGER BOOLEAN
 %token <string Location.t> IDENT
 %token CLASS PUBLIC STATIC VOID MAIN STRING EXTENDS RETURN
-%token PLUS MINUS TIMES DIV MOD NOT LT GT EQ NEQ AND OR ORBITWISE XOR ANDBITWISE OPSHIFTLEFT OPSHIFTRIGHT 
+%token PLUS MINUS TIMES DIV MOD NOT LT GT EQ NEQ AND OR ADDASSIGN SUBASSIGN MULASSIGN DIVASSIGN MODASSIGN ORBITWISE XOR ANDBITWISE OPSHIFTLEFT OPSHIFTRIGHT 
 %token INC
 %token COMMA SEMICOLON
 %token ASSIGN
@@ -18,7 +18,7 @@
 %token IF ELSE WHILE
 %token EOF
 
-%left AND OR ORBITWISE XOR ANDBITWISE OPSHIFTLEFT OPSHIFTRIGHT 
+%left AND ADDASSIGN SUBASSIGN MULASSIGN DIVASSIGN MODASSIGN OR ORBITWISE XOR ANDBITWISE OPSHIFTLEFT OPSHIFTRIGHT 
 %nonassoc EQ NEQ
 %nonassoc LT GT
 %left PLUS MINUS 
@@ -173,10 +173,22 @@ raw_expression:
 | ANDBITWISE { OpAndBitwise }
 | OPSHIFTLEFT { OpShiftLeftBitwise }
 | OPSHIFTRIGHT { OpShiftRightBitewise }
+| ADDASSIGN { OpAddAssign }
+| SUBASSIGN { OpSubAssign }
+| MULASSIGN { OpMulAssign }
+| DIVASSIGN { OpDivAssign }
+| MODASSIGN { OpModAssign }
 
 instruction:
 | b = block
    { b }
+| id = IDENT ADDASSIGN e = expression SEMICOLON
+   {
+     let lhs =
+       Location.make (Location.startpos id) (Location.endpos id) (EGetVar id)
+     in
+     IExpr (Location.make $startpos $endpos (EBinOp (OpAddAssign, lhs, e)))
+   }
 
 | id = IDENT ASSIGN e = expression SEMICOLON
    { ISetVar (id, e) }

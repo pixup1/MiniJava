@@ -29,8 +29,8 @@ let indentation = 2
     and [c = List.assoc "C" defs]
     then [fold_class_hierarchy f defs (Some "C") acc] is [f "C" c (f "B" b (f "A" a acc))]. *)
 let rec fold_class_hierarchy
-          (f : string -> TMJ.clas -> 'a -> 'a)
-          (defs : (TMJ.identifier * TMJ.clas) list)
+          (f : string -> clas -> 'a -> 'a)
+          (defs : (identifier * clas) list)
           (parent : string option)
           (acc : 'a)
         : 'a =
@@ -49,7 +49,7 @@ module type ClassInfoType = sig
   type t
   (** [create name c defs] creates a [ClassInfoType.t] from the [name] of a class,
       the class [c] and all class definitions [defs]. *)
-  val create : string -> TMJ.clas -> (identifier * clas) list -> t
+  val create : string -> clas -> (identifier * clas) list -> t
 
   (** [class_name class_info] returns the name of the class of this [class_info]. *)
   val class_name : t -> string
@@ -70,7 +70,7 @@ module type ClassInfoType = sig
   val vtable_index : string -> t -> int
 
   (** [return_type m class_info] gets the return type of the method [m] for this [class_info]. *)
-  val return_type : string -> t -> TMJ.typ
+  val return_type : string -> t -> typ
 
   (** [get_methods class_info] returns all the method names of the [class_info] in a list.
       A method name is prefixed by the class where the method is last defined. The list is
@@ -80,7 +80,7 @@ module type ClassInfoType = sig
   (** [get_attributes class_info] returns a list of all the attribute names of the [class_info] associated with their types.
       An attribute name is prefixed by the class where it is defined.
       The order in this list is such that the attributes for a parent class are put before the attributes of a child class.*)
-  val get_attributes : t -> (string * TMJ.typ) list
+  val get_attributes : t -> (string * typ) list
 end
 
 module ClassInfo : ClassInfoType = struct
@@ -98,7 +98,7 @@ module ClassInfo : ClassInfoType = struct
    The first element of the triple is the class origin of the attribute,
    the second element is an index used to create the field of the corresponding
    C structure in a correct order and the third element is the type of the attribute. *)
-  type attribute_info = (string * int * TMJ.typ) list SM.t
+  type attribute_info = (string * int * typ) list SM.t
 
   (** If we have the following classes
     class A {
@@ -115,8 +115,8 @@ module ClassInfo : ClassInfoType = struct
      "m3" --> ("B", 2, MJ.metho for m3)
    The first element of the triple is the class origin of the method,
    the second element is the virtual table index and
-   the third element is the [TMJ.metho] type for the method. *)
-  type method_info = (string * int * TMJ.metho) SM.t
+   the third element is the [metho] type for the method. *)
+  type method_info = (string * int * metho) SM.t
 
   type t = {
       class_name : string;
@@ -256,7 +256,7 @@ end
 let class_infos = Hashtbl.create 57
 
 (** [init_class_infos p] fills the [class_infos] hash table using the classes defined in [p]. *)
-let init_class_infos (p : TMJ.program) : unit =
+let init_class_infos (p : program) : unit =
   let main =
     {
       extends = None;
@@ -282,7 +282,7 @@ let get_class_info (c : string) : ClassInfo.t =
 (** [constant2c out c] transpiles the constant [c] to C on the output channel [out]. *)
 let constant2c
       out
-      (c : TMJ.constant)
+      (c : constant)
     : unit =
 
   match c with
@@ -293,7 +293,7 @@ let constant2c
 (** [binop2c out op] transpiles the binary operator [op] to C on the output channel [out]. *)
 let binop2c
       out
-      (op : TMJ.binop)
+      (op : binop)
     : unit =
   match op with
   | OpAdd -> fprintf out "+"
@@ -305,6 +305,7 @@ let binop2c
   | OpGt  -> fprintf out ">"
   | OpEq  -> fprintf out "=="
   | OpNeq -> fprintf out "!="
+  | OpAddAssign -> fprintf out "+="
   | OpAnd -> fprintf out "&&" 
   | OpOr  -> fprintf out "||"
   | OpOrBitwise -> fprintf out "|"
@@ -316,7 +317,7 @@ let binop2c
 (** [type2c out typ] transpiles the type [typ] to C on the output channel [out]. *)
 let type2c
       out
-      (typ : TMJ.typ)
+      (typ : typ)
     : unit =
   match typ with
   | TypInt -> fprintf out "int"
@@ -327,7 +328,7 @@ let type2c
 (** [cast out typ] transpiles the cast to [typ] to C on the output channel [out]. *)
 let cast
       out
-      (typ : TMJ.typ)
+      (typ : typ)
     : unit =
   fprintf out "(%a)" type2c typ
 
@@ -348,7 +349,7 @@ let var2c
 (** [get_class typ] gets the class name of the the type [typ].
     If no class type is associated with expression [e], [get_class]
     returns the empty string. *)
-let rec get_class (typ : TMJ.typ) : string =
+let rec get_class (typ : typ) : string =
   match typ with
     | Typ t -> t
     | _ -> ""
@@ -359,7 +360,7 @@ let expr2c
       (method_name : string)
       (class_info : ClassInfo.t)
       out
-      (expr : TMJ.expression)
+      (expr : expression)
     : unit =
   let rec expr2c out e =
     match e.raw_expression with
@@ -433,6 +434,101 @@ let expr2c
        fprintf out "!(%a)"
          expr2c e
 
+    | EBinOp (OpAddAssign, e1, e2) ->
+      begin
+        match e1.raw_expression with
+        | EGetVar v ->
+            fprintf out "%a = %a + %a"
+              (var2c method_name class_info) v
+              (var2c method_name class_info) v
+              expr2c e2
+        | EArrayGet (arr, idx) ->
+            fprintf out "(%a)->array[%a] = (%a)->array[%a] + %a"
+              expr2c arr
+              expr2c idx
+              expr2c arr
+              expr2c idx
+              expr2c e2
+        | _ ->
+            assert false
+      end
+
+    | EBinOp (OpSubAssign, e1, e2) ->
+      begin
+        match e1.raw_expression with
+        | EGetVar v ->
+            fprintf out "%a = %a - %a"
+              (var2c method_name class_info) v
+              (var2c method_name class_info) v
+              expr2c e2
+        | EArrayGet (arr, idx) ->
+            fprintf out "(%a)->array[%a] = (%a)->array[%a] - %a"
+              expr2c arr
+              expr2c idx
+              expr2c arr
+              expr2c idx
+              expr2c e2
+        | _ ->
+            assert false
+      end
+
+    | EBinOp (OpMulAssign, e1, e2) ->
+      begin
+        match e1.raw_expression with
+        | EGetVar v ->
+            fprintf out "%a = %a * %a"
+              (var2c method_name class_info) v
+              (var2c method_name class_info) v
+              expr2c e2
+        | EArrayGet (arr, idx) ->
+            fprintf out "(%a)->array[%a] = (%a)->array[%a] * %a"
+              expr2c arr
+              expr2c idx
+              expr2c arr
+              expr2c idx
+              expr2c e2
+        | _ ->
+            assert false
+      end
+
+    | EBinOp (OpDivAssign, e1, e2) ->
+      begin
+        match e1.raw_expression with
+        | EGetVar v ->
+            fprintf out "%a = %a / %a"
+              (var2c method_name class_info) v
+              (var2c method_name class_info) v
+              expr2c e2
+        | EArrayGet (arr, idx) ->
+            fprintf out "(%a)->array[%a] = (%a)->array[%a] / %a"
+              expr2c arr
+              expr2c idx
+              expr2c arr
+              expr2c idx
+              expr2c e2
+        | _ ->
+            assert false
+      end
+
+    | EBinOp (OpModAssign, e1, e2) ->
+      begin
+        match e1.raw_expression with
+        | EGetVar v ->
+            fprintf out "%a = %a %% %a"
+              (var2c method_name class_info) v
+              (var2c method_name class_info) v
+              expr2c e2
+        | EArrayGet (arr, idx) ->
+            fprintf out "(%a)->array[%a] = (%a)->array[%a] %% %a"
+              expr2c arr
+              expr2c idx
+              expr2c arr
+              expr2c idx
+              expr2c e2
+        | _ ->
+            assert false
+      end
+
     | EBinOp (op, e1, e2) ->
        fprintf out "(%a %a %a)"
          expr2c e1
@@ -440,15 +536,17 @@ let expr2c
          expr2c e2
 
     | EIncPre v ->
-    var2c method_name class_info out v;
-    fprintf out " = %a + 1" (var2c method_name class_info) v
+      fprintf out "({ %a = %a + 1; %a; })"
+        (var2c method_name class_info) v
+        (var2c method_name class_info) v
+        (var2c method_name class_info) v
 
-  | EIncPost v ->
-      fprintf out "({ int %s = " !name1;
+    | EIncPost v ->
+      fprintf out "({ int tmp = ";
       var2c method_name class_info out v;
       fprintf out "; ";
       var2c method_name class_info out v;
-      fprintf out " = %s + 1; %s; })" !name1 !name1
+      fprintf out " = tmp + 1; tmp; })"
   in
   expr2c out expr
 
@@ -458,7 +556,7 @@ let instr2c
       (method_name : string)
       (class_info : ClassInfo.t)
       out
-      (ins : TMJ.instruction)
+      (ins : instruction)
     : unit =
   let rec instr2c out ins =
     match ins with
@@ -498,7 +596,7 @@ let instr2c
          (expr2c method_name class_info) e
 
     | IExpr e ->
-        fprintf out "%a;" (expr2c method_name class_info) e
+        fprintf out "%a;\n" (expr2c method_name class_info) e
   in
   instr2c out ins
 
@@ -513,7 +611,7 @@ let class_declaration2c
 (** [decl2c out (id, t)] transpiles the declaration [(id, t)] to C on the output channel [out]. *)
 let decl2c
       out
-      ((id, t) : string * TMJ.typ)
+      ((id, t) : string * typ)
     : unit =
   fprintf out "%a %s"
     type2c t
@@ -523,11 +621,11 @@ let decl2c
     to C on the output channel [out]. *)
 let method_declaration2c
       out
-      ((class_name, clas) : string * TMJ.clas)
+      ((class_name, clas) : string * clas)
     : unit =
   let method_declaration2c
         out
-        ((method_name, m) : string * TMJ.metho)
+        ((method_name, m) : string * metho)
       : unit =
     fprintf out "void* %s_%s(struct %s* this%a);"
       class_name
@@ -543,7 +641,7 @@ let method_declaration2c
 (** [class_definition2c out (name, c)] defines the C structure representing the class [name] with type [c] on the output channel [out]. *)
 let class_definition2c
       out
-      ((class_name, clas) : string * TMJ.clas)
+      ((class_name, clas) : string * clas)
     : unit =
   let field_names =
     get_class_info class_name
@@ -551,7 +649,7 @@ let class_definition2c
   in
   let field2c
         out
-        ((name, t) : string * TMJ.typ)
+        ((name, t) : string * typ)
       : unit =
     fprintf out "%a %s"
       type2c t
@@ -566,7 +664,7 @@ let class_definition2c
     to C on the output channel [out]. *)
 let method_definition2c
       out
-      ((class_name, clas) : string * TMJ.clas)
+      ((class_name, clas) : string * clas)
     : unit =
   let class_info = get_class_info class_name in
   let method_definition out (method_name, m) =
@@ -601,8 +699,8 @@ let vtable_definition2c
     (ClassInfo.get_methods class_info)
 
 (** [all_variables p] returns the list of all the variables of program [p]. *)
-let all_variables (p : TMJ.program) : string list =
-  let variables_from_method (m : TMJ.metho) : string list =
+let all_variables (p : program) : string list =
+  let variables_from_method (m : metho) : string list =
     List.(map fst m.formals
           @ map fst m.locals)
   in
@@ -616,7 +714,7 @@ let all_variables (p : TMJ.program) : string list =
             p.defs
           |> flatten)
 
-let program2c out (p : TMJ.program) : unit =
+let program2c out (p : program) : unit =
   init_class_infos p;
   let all_class_names =
     List.map fst p.defs
