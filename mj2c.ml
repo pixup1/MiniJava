@@ -558,6 +558,17 @@ let instr2c
       out
       (ins : instruction)
     : unit =
+  let instr2cnosemicolon out ins =
+    match ins with
+    | ISetVar (x, typ, e) ->
+       let x_class = get_class typ in
+       let e_class = get_class e.typ in
+       fprintf out "%a = %s%a"
+         (var2c method_name class_info) x
+         (if x_class <> e_class then sprintf "(struct %s*) " x_class else "")
+         (expr2c method_name class_info) e
+    in
+    
   let rec instr2c out ins =
     match ins with
     | ISetVar (x, typ, e) ->
@@ -584,6 +595,13 @@ let instr2c
     | IWhile (c, i) ->
        fprintf out "while (%a) %a"
          (expr2c method_name class_info) c
+         instr2c i
+    
+    | IFor (e1, e2, e3, i) ->
+       fprintf out "for (%a; %a; %a) %a"
+         instr2cnosemicolon e1
+         (expr2c method_name class_info) e2
+         instr2cnosemicolon e3
          instr2c i
 
     | IBlock is ->

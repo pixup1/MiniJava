@@ -15,7 +15,7 @@
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
 %token THIS NEW DOT LENGTH
 %token SYSO
-%token IF ELSE WHILE
+%token IF ELSE WHILE FOR
 %token EOF
 
 %left AND ADDASSIGN SUBASSIGN MULASSIGN DIVASSIGN MODASSIGN OR ORBITWISE XOR ANDBITWISE OPSHIFTLEFT OPSHIFTRIGHT 
@@ -207,6 +207,9 @@ instruction:
 
 | WHILE LPAREN c = expression RPAREN i = instruction
    { IWhile (c, i) }
+
+| FOR LPAREN id1 = IDENT ASSIGN e1 = expression SEMICOLON c = expression SEMICOLON id2 = IDENT ASSIGN e2 = expression RPAREN i = instruction
+   { IFor (ISetVar (id1, e1), c, ISetVar (id2, e2), i) }
 
 | e = expression SEMICOLON
    { IExpr e }

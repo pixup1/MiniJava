@@ -360,6 +360,13 @@ let rec typecheck_instruction (cenv : class_env) (venv : variable_env) (vinit : 
       let cond' = typecheck_expression_expecting cenv venv vinit instanceof TypBool cond in
       let ibody', vinit = typecheck_instruction cenv venv vinit instanceof ibody in
       (TMJ.IWhile (cond', ibody'), vinit)
+  
+  | IFor (e1, cond, e3, ibody) ->
+      let e1', vinit = typecheck_instruction cenv venv vinit instanceof e1 in
+      let cond' = typecheck_expression_expecting cenv venv vinit instanceof TypBool cond in
+      let e3', vinit = typecheck_instruction cenv venv vinit instanceof e3 in
+      let ibody', vinit = typecheck_instruction cenv venv vinit instanceof ibody in
+      (TMJ.IFor (e1', cond', e3', ibody'), vinit)
 
   | ISyso e ->
      let e' = typecheck_expression_expecting cenv venv vinit instanceof TypInt e in
