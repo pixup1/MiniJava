@@ -40,6 +40,8 @@ rule get_token = parse
   | "||"      { OR }
   | ">>"      { OPSHIFTRIGHT }
   | "<<"      { OPSHIFTLEFT }
+  | "<="      { LEQ }
+  | ">="      { GEQ }
   | "<"       { LT }
   | ">"       { GT }
   | "=="      { EQ }

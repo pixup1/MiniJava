@@ -31,6 +31,8 @@ and binop = LMJ.binop =
   | OpMod
   | OpLt
   | OpGt
+  | OpLeq
+  | OpGeq
   | OpEq
   | OpNeq
   | OpAddAssign

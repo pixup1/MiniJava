@@ -257,6 +257,8 @@ and typecheck_expression (cenv : class_env) (venv : variable_env) (vinit : S.t)
         | OpMod -> TypInt, TypInt
         | OpLt  -> TypInt, TypBool
         | OpGt  -> TypInt, TypBool
+        | OpLeq -> TypInt, TypBool
+        | OpGeq -> TypInt, TypBool
         | OpEq  -> TypInt, TypBool
         | OpNeq -> TypInt, TypBool
         | OpAnd -> TypBool, TypBool
@@ -366,15 +368,15 @@ let rec typecheck_instruction (cenv : class_env) (venv : variable_env) (vinit : 
       let cond' = typecheck_expression_expecting cenv venv vinit instanceof TypBool cond in
       let e3', vinit = typecheck_instruction cenv venv vinit instanceof e3 in
       let ibody', vinit = typecheck_instruction cenv venv vinit instanceof ibody in
-      (TMJ.IFor (e1', cond', e3', ibody'), vinit)
+      (IFor (e1', cond', e3', ibody'), vinit)
 
   | ISyso e ->
      let e' = typecheck_expression_expecting cenv venv vinit instanceof TypInt e in
-     (TMJ.ISyso e', vinit)
+     (ISyso e', vinit)
 
-    | LMJ.IExpr e ->
+    | IExpr e ->
         let e' = typecheck_expression cenv venv vinit instanceof e in
-        (TMJ.IExpr e', vinit)
+        (IExpr e', vinit)
 
 (** [occurences x bindings] returns the elements in [bindings] that have [x] has identifier. *)
 let occurrences (x : string) (bindings : (identifier * 'a) list) : identifier list =

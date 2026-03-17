@@ -303,6 +303,8 @@ let binop2c
   | OpMod -> fprintf out "%%"
   | OpLt  -> fprintf out "<"
   | OpGt  -> fprintf out ">"
+  | OpLeq -> fprintf out "<="
+  | OpGeq -> fprintf out ">="
   | OpEq  -> fprintf out "=="
   | OpNeq -> fprintf out "!="
   | OpAddAssign -> fprintf out "+="
