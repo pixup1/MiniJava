@@ -65,6 +65,9 @@ and instruction =
   | ISetVar of identifier * expression (** [ISetVar (id, e)] represents the instruction [id = e;]. *)
   | IArraySet of identifier * expression * expression (** [IArraySet (id, e1, e2)] represents the instruction [id[e1] = e2;]. *)
   | IExpr of expression (** [IExpr e] represents the instruction [e;]. *)
+  | IBreak (** [IBreak] represents the instruction [break;]. *)
+  | IContinue (** [IContinue] represents the instruction [continue;]. *)
+  | IReturn of expression (** [IReturn e] represents the instruction [return e;]. *)
 
 and typ =
   | TypInt (** Type [int]. *)

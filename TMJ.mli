@@ -60,6 +60,9 @@ and instruction =
   | ISetVar of identifier * typ * expression
   | IArraySet of identifier * expression * expression
   | IExpr of expression
+  | IBreak 
+  | IContinue
+  | IReturn of expression
 
 and typ =
   | TypInt

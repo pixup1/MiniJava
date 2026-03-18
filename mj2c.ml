@@ -617,6 +617,15 @@ let instr2c
 
     | IExpr e ->
         fprintf out "%a;\n" (expr2c method_name class_info) e
+
+    | IBreak ->
+        fprintf out "break;"
+
+    | IContinue ->
+        fprintf out "continue;"
+
+    | IReturn e ->
+        fprintf out "return %a;" (expr2c method_name class_info) e
   in
   instr2c out ins
 
