@@ -308,6 +308,10 @@ let binop2c
   | OpEq  -> fprintf out "=="
   | OpNeq -> fprintf out "!="
   | OpAddAssign -> fprintf out "+="
+  | OpSubAssign -> fprintf out "-="
+  | OpMulAssign -> fprintf out "*="
+  | OpDivAssign -> fprintf out "/="
+  | OpModAssign -> fprintf out "%%="
   | OpAnd -> fprintf out "&&" 
   | OpOr  -> fprintf out "||"
   | OpOrBitwise -> fprintf out "|"
@@ -623,9 +627,6 @@ let instr2c
 
     | IContinue ->
         fprintf out "continue;"
-
-    | IReturn e ->
-        fprintf out "return %a;" (expr2c method_name class_info) e
   in
   instr2c out ins
 

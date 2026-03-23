@@ -397,10 +397,6 @@ let rec typecheck_instruction
         "continue used outside of a loop";
     (IContinue, vinit)
 
-  | IReturn e ->
-      let e' = typecheck_expression cenv venv vinit instanceof  e in
-      (IReturn e', vinit)
-
 (** [occurences x bindings] returns the elements in [bindings] that have [x] has identifier. *)
 let occurrences (x : string) (bindings : (identifier * 'a) list) : identifier list =
   List.map fst (List.filter (fun (id, _) -> x = Location.content id) bindings)

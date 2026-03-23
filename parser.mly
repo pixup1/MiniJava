@@ -222,9 +222,6 @@ instruction:
 | CONTINUE SEMICOLON
    { IContinue }
 
-| RETURN e = expression SEMICOLON
-   { IReturn e }
-
 block:
 | LBRACE is = list(instruction) RBRACE
    { IBlock is }

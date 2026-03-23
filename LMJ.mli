@@ -67,7 +67,6 @@ and instruction =
   | IExpr of expression (** [IExpr e] represents the instruction [e;]. *)
   | IBreak (** [IBreak] represents the instruction [break;]. *)
   | IContinue (** [IContinue] represents the instruction [continue;]. *)
-  | IReturn of expression (** [IReturn e] represents the instruction [return e;]. *)
 
 and typ =
   | TypInt (** Type [int]. *)

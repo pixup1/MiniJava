@@ -62,7 +62,6 @@ and instruction =
   | IExpr of expression
   | IBreak 
   | IContinue
-  | IReturn of expression
 
 and typ =
   | TypInt
