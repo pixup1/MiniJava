@@ -63,6 +63,7 @@ and instruction =
   | IExpr of expression
   | IBreak 
   | IContinue
+  | IReturn of expression
 
 and typ =
   | TypInt
@@ -77,7 +78,7 @@ and metho = {
     result: typ;
     locals: (identifier * typ) list;
     body: instruction list;
-    return: expression
+    (* return: expression *)
   }
 
 and clas = {

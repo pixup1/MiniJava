@@ -349,6 +349,7 @@ let rec typecheck_instruction
     (vinit : S.t)
     (instanceof : identifier -> identifier -> bool)
     (in_loop : bool)
+    (expected_return_type : typ)
     (inst : instruction) : (TMJ.instruction * S.t) =
   match inst with
   | ISetVar (v, e) ->
@@ -371,7 +372,7 @@ let rec typecheck_instruction
       let instructions', vinit =
         List.fold_left
           (fun (acc, vinit) inst ->
-          let inst, vinit = typecheck_instruction cenv venv vinit instanceof in_loop inst in
+          let inst, vinit = typecheck_instruction cenv venv vinit instanceof in_loop expected_return_type inst in
           (inst :: acc, vinit))
         ([], vinit)
         instructions
@@ -381,23 +382,23 @@ let rec typecheck_instruction
   | IIf (cond, ithen, ielse) ->
       let cond' = typecheck_expression_expecting cenv venv vinit instanceof TypBool cond in
       let ithen', vinit1 =
-        typecheck_instruction cenv venv vinit instanceof in_loop ithen
+        typecheck_instruction cenv venv vinit instanceof in_loop expected_return_type ithen
       in
       let ielse', vinit2 =
-        typecheck_instruction cenv venv vinit instanceof in_loop ielse
+        typecheck_instruction cenv venv vinit instanceof in_loop expected_return_type ielse
       in
       (TMJ.IIf (cond', ithen', ielse'), S.inter vinit1 vinit2)
 
   | IWhile (cond, ibody) ->
       let cond' = typecheck_expression_expecting cenv venv vinit instanceof TypBool cond in
-      let ibody', vinit = typecheck_instruction cenv venv vinit instanceof true ibody in
+      let ibody', vinit = typecheck_instruction cenv venv vinit instanceof true expected_return_type ibody in
       (TMJ.IWhile (cond', ibody'), vinit)
   
   | IFor (e1, cond, e3, ibody) ->
-      let e1', vinit = typecheck_instruction cenv venv vinit instanceof in_loop e1 in
+      let e1', vinit = typecheck_instruction cenv venv vinit instanceof in_loop expected_return_type e1 in
       let cond' = typecheck_expression_expecting cenv venv vinit instanceof TypBool cond in
-      let e3', vinit = typecheck_instruction cenv venv vinit instanceof in_loop e3 in
-      let ibody', vinit = typecheck_instruction cenv venv vinit instanceof true ibody in
+      let e3', vinit = typecheck_instruction cenv venv vinit instanceof in_loop expected_return_type e3 in
+      let ibody', vinit = typecheck_instruction cenv venv vinit instanceof true expected_return_type ibody in
       (IFor (e1', cond', e3', ibody'), vinit)
 
   | ISyso e ->
@@ -419,6 +420,25 @@ let rec typecheck_instruction
       error (Location.make Lexing.dummy_pos Lexing.dummy_pos ())
         "continue used outside of a loop";
     (IContinue, vinit)
+
+  | IReturn e ->
+    let e' =
+      typecheck_expression_expecting cenv venv vinit instanceof expected_return_type e
+    in
+    (TMJ.IReturn e', vinit)
+let rec always_returns inst =
+  match inst with
+  | IReturn _ -> true
+  | IBlock l ->
+    let rec aux = function
+      | [] -> false
+      | i :: rest ->
+          if always_returns i then true
+          else aux rest
+    in aux l
+  | IIf (_, i1, i2) ->
+      always_returns i1 && always_returns i2
+  | _ -> false
 
 (** [occurences x bindings] returns the elements in [bindings] that have [x] has identifier. *)
 let occurrences (x : string) (bindings : (identifier * 'a) list) : identifier list =
@@ -476,17 +496,17 @@ let typecheck_method (cenv : class_env) (venv : variable_env)
     S.diff (SM.domain venv) (SM.domain mlocals)
   in
   let body', vinit =
-    match typecheck_instruction cenv venv vinit instanceof false (IBlock m.body) with 
+    match typecheck_instruction cenv venv vinit instanceof false m.result (IBlock m.body) with 
     | IBlock body', vinit -> body', vinit 
     | _ -> assert false
   in
-  let return' = typecheck_expression_expecting cenv venv vinit instanceof m.result m.return in
+  if not (always_returns (IBlock m.body)) then
+      error (Location.make Lexing.dummy_pos Lexing.dummy_pos ()) "Missing return in method";
   TMJ.{
     formals = List.map (fun (id, typ) -> Location.content id, type_lmj_to_tmj typ) m.formals;
     result  = type_lmj_to_tmj m.result;
     locals  = List.map (fun (id, typ) -> Location.content id, type_lmj_to_tmj typ) m.locals;
     body    = body';
-    return  = return'
   }
 
 (** [typecheck_class cenv instanceof (name, c)] checks, using the environments [cenv] and [venv]
@@ -626,6 +646,6 @@ let typecheck_program (p : program) : TMJ.program =
     name = Location.content p.name;
     defs = defs';
     main_args = Location.content p.main_args;
-    main      = fst (typecheck_instruction cenv venv S.empty instanceof false p.main)
+    main      = fst (typecheck_instruction cenv venv S.empty instanceof false TypInt p.main)
   }
   

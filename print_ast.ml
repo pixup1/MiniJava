@@ -256,7 +256,7 @@ let print_declaration_list out l =
 (** [print_method prefix out m] prints the method [m] on the output channel [out].
     [prefix] is the string already printed just before [m]. *)
 let print_method prefix out m =
-  fprintf out "formals %a\n%s%sresult %a\n%s%slocals %a\n%s%sbody\n%a%s%s%sreturn\n%a"
+  fprintf out "formals %a\n%s%sresult %a\n%s%slocals %a\n%s%sbody\n%a%s%s%s"
     print_declaration_list m.formals
     prefix
     branch
@@ -270,8 +270,6 @@ let print_method prefix out m =
     (if m.body = [] then "" else "\n")
     prefix
     branch_end
-    (print_expression_list (prefix ^ " ")) [m.return]
-
 (** [print_identifier_method_list prefix out l] prints the list of methods with their names [l] on the output channel [out].
     [prefix] is the current prefix string, but currently the position in the output channel [out] is
     at the beginning of a line (the prefix string is not already printed). *)

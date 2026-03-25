@@ -68,6 +68,7 @@ and instruction =
   | IExpr of expression (** [IExpr e] represents the instruction [e;]. *)
   | IBreak (** [IBreak] represents the instruction [break;]. *)
   | IContinue (** [IContinue] represents the instruction [continue;]. *)
+  | IReturn of expression (**[IReturn e] represents the instruction [return e;]. *)
 
 and typ =
   | TypInt (** Type [int]. *)
@@ -82,7 +83,7 @@ and metho = {
   result: typ; (** Result type of the method. *)
   locals: (identifier * typ) list; (** The names of the local variables with their types (declared at the beginning of the method). *)
   body: instruction list; (** The list of instructions of the method. *)
-  return: expression (** The return expression. *)
+  (* return: expression * The return expression. *)
 }
 
 and clas = {
