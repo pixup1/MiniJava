@@ -289,6 +289,7 @@ let constant2c
   | ConstBool true  -> fprintf out "1"
   | ConstBool false -> fprintf out "0"
   | ConstInt i      -> fprintf out "%ld" i
+  | ConstFloat f    -> fprintf out "%f" f
 
 (** [binop2c out op] transpiles the binary operator [op] to C on the output channel [out]. *)
 let binop2c
@@ -327,8 +328,10 @@ let type2c
     : unit =
   match typ with
   | TypInt -> fprintf out "int"
+  | TypFloat -> fprintf out "float"
   | TypBool -> fprintf out "int"
   | TypIntArray -> fprintf out "struct %s*" !struct_array_name
+  | TypFloatArray -> fprintf out "struct %s*" !struct_array_name
   | Typ t -> fprintf out "struct %s*" t
 
 (** [cast out typ] transpiles the cast to [typ] to C on the output channel [out]. *)
@@ -384,7 +387,18 @@ let expr2c
        let class_info = get_class_info clas in
        let index = ClassInfo.vtable_index callee class_info in
        let typ = ClassInfo.return_type callee class_info in
-       fprintf out "({ struct %s* %s = %a; %a %s->vtable[%d](%s%a); })"
+       begin match typ with
+       | TypFloat -> fprintf out "({ struct %s* %s = %a; void* %s = (void*) %s->vtable[%d](%s%a); (float)(*(float*)&%s); })"
+         clas
+         !name1
+         expr2c o
+         !name2
+         !name1
+         index
+         !name1
+         (prec_list comma expr2c) args
+         !name2
+       | _ -> fprintf out "({ struct %s* %s = %a; %a %s->vtable[%d](%s%a); })"
          clas
          !name1
          expr2c o
@@ -393,6 +407,7 @@ let expr2c
          index
          !name1
          (prec_list comma expr2c) args
+    end
 
     | EArrayAlloc e ->
        fprintf out "(void*)({ int %s = %a; \
@@ -616,8 +631,12 @@ let instr2c
          nl
 
     | ISyso e ->
-       fprintf out "printf(\"%%d\\n\", %a);"
+      begin match e.typ with
+      | TypFloat -> fprintf out "printf(\"%%.7g\\n\", %a);"
          (expr2c method_name class_info) e
+      | _ -> fprintf out "printf(\"%%d\\n\", %a);"
+         (expr2c method_name class_info) e
+      end
 
     | IExpr e ->
         fprintf out "%a;\n" (expr2c method_name class_info) e
@@ -699,7 +718,10 @@ let method_definition2c
   let class_info = get_class_info class_name in
   let method_definition out (method_name, m) =
     let return2c out e =
-      fprintf out "return (void*)(%a);"
+      match ClassInfo.return_type method_name class_info with
+      | TypFloat -> fprintf out "return (void*)(*(int*)&%a);"
+        (expr2c method_name class_info) e
+      | _ -> fprintf out "return (void*)(%a);"
         (expr2c method_name class_info) e
     in
     fprintf out "void* %s_%s(struct %s* this%a) {%a%a%a\n}"

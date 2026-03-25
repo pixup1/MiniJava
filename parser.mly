@@ -4,8 +4,9 @@
 %}
 
 %token <int32> INT_CONST
+%token <float> FLOAT_CONST
 %token <bool> BOOL_CONST
-%token INTEGER BOOLEAN
+%token INTEGER BOOLEAN FLOAT
 %token <string Location.t> IDENT
 %token CLASS PUBLIC STATIC VOID MAIN STRING EXTENDS RETURN
 %token PLUS MINUS TIMES DIV MOD NOT LT GT LEQ GEQ EQ NEQ AND OR ADDASSIGN SUBASSIGN MULASSIGN DIVASSIGN MODASSIGN ORBITWISE XOR ANDBITWISE OPSHIFTLEFT OPSHIFTRIGHT 
@@ -122,6 +123,9 @@ raw_expression:
 | b = BOOL_CONST
    { EConst (ConstBool b) }
 
+| f = FLOAT_CONST
+   { EConst (ConstFloat f) }
+
 | id = IDENT
    { EGetVar id }
 
@@ -229,9 +233,13 @@ block:
 typ:
 | INTEGER
    { TypInt }
+| FLOAT
+   { TypFloat }
 | BOOLEAN
    { TypBool }
 | INTEGER LBRACKET RBRACKET
    { TypIntArray }
+| FLOAT LBRACKET RBRACKET
+   { TypFloatArray }
 | id = IDENT
    { Typ id }

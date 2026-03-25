@@ -58,30 +58,40 @@ let clookup : identifier -> class_env -> class_type = lookup "class"
 let rec compatible (typ1 : typ) (typ2 : typ) (instanceof : identifier -> identifier -> bool) : bool =
   match typ1, typ2 with
   | TypInt, TypInt
+  | TypInt, TypFloat
+  | TypFloat, TypInt
+  | TypFloat, TypFloat
   | TypBool, TypBool
   | TypIntArray, TypIntArray -> true
+  | TypFloatArray, TypFloatArray -> true
   | Typ t1, Typ t2 -> instanceof t1 t2
   | _, _ -> false
 
 (** [typ_lmj_to_tmj t] converts the [LMJ] type [t] into the equivalent [TMJ] type. *)
 let rec type_lmj_to_tmj = function
   | TypInt      -> TMJ.TypInt
+  | TypFloat    -> TMJ.TypFloat
   | TypBool     -> TMJ.TypBool
   | TypIntArray -> TMJ.TypIntArray
+  | TypFloatArray -> TMJ.TypFloatArray
   | Typ id      -> TMJ.Typ (Location.content id)
 
 (** [typ_tmj_to_lmj s e t] converts the [TMJ] type [t] into the equivalent [LMJ] type using location starting position [s] and location ending position [e]. *)
 let rec type_tmj_to_lmj startpos endpos = function
 | TMJ.TypInt      -> TypInt
+| TMJ.TypFloat    -> TypFloat
 | TMJ.TypBool     -> TypBool
 | TMJ.TypIntArray -> TypIntArray
+| TMJ.TypFloatArray -> TypFloatArray
 | TMJ.Typ id      -> Typ (Location.make startpos endpos id)
 
 (** [tmj_type_to_string t] converts the [TMJ] type [t] into a string representation. *)
 let rec tmj_type_to_string : TMJ.typ -> string = function
   | TMJ.TypInt -> "integer"
+  | TMJ.TypFloat -> "float"
   | TMJ.TypBool -> "boolean"
   | TMJ.TypIntArray -> "int[]"
+  | TMJ.TypFloatArray -> "float[]"
   | TMJ.Typ t -> t
 
 (** [type_to_string t] converts the [LMJ] type [t] into a string representation. *)
@@ -140,6 +150,16 @@ and typecheck_expression_expecting (cenv : class_env) (venv : variable_env) (vin
       (sprintf "Type mismatch, expected %s, got %s" (type_to_string typ1) (tmj_type_to_string e'.typ));
   e'
 
+(* and typecheck_expression_expecting_either (cenv : class_env) (venv : variable_env) (vinit : S.t)
+    (instanceof : identifier -> identifier -> bool)
+    (typs : typ list)
+    (e : expression) : TMJ.expression =
+  let e' = typecheck_expression cenv venv vinit instanceof e in
+  if not (compatible Location.(type_tmj_to_lmj (startpos e) (endpos e) e'.typ) typ1 instanceof) then
+    error e
+      (sprintf "Type mismatch, expected %s, got %s" (type_to_string typ1) (tmj_type_to_string e'.typ));
+  e' *)
+
 (** [typecheck_expression cenv venv vinit instanceof e] checks, using the environments [cenv] and
     [venv], the set of initialized variables [vinit] and the [instanceof] function,
     that the expression [e] is well typed.
@@ -153,6 +173,9 @@ and typecheck_expression (cenv : class_env) (venv : variable_env) (vinit : S.t)
 
   | EConst (ConstInt i) ->
       mke (TMJ.EConst (ConstInt i)) TypInt
+  
+  | EConst (ConstFloat i) ->
+      mke (TMJ.EConst (ConstFloat i)) TypFloat
 
   | EGetVar v ->
      let typ = vlookup v venv in
