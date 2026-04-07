@@ -69,6 +69,7 @@ and instruction =
   | IBreak (** [IBreak] represents the instruction [break;]. *)
   | IContinue (** [IContinue] represents the instruction [continue;]. *)
   | IReturn of expression (**[IReturn e] represents the instruction [return e;]. *)
+  | IDoWhile of instruction * expression (** [IDoWhile (i, e)] represents the instruction [do i while (e);]. *)
 
 and typ =
   | TypInt (** Type [int]. *)

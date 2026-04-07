@@ -16,7 +16,7 @@
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
 %token THIS NEW DOT LENGTH
 %token SYSO
-%token IF ELSE WHILE FOR BREAK CONTINUE
+%token IF ELSE DOWHILE WHILE FOR BREAK CONTINUE
 %token EOF
 
 %left AND ADDASSIGN SUBASSIGN MULASSIGN DIVASSIGN MODASSIGN OR ORBITWISE XOR ANDBITWISE OPSHIFTLEFT OPSHIFTRIGHT 
@@ -209,6 +209,9 @@ instruction:
 
 | IF LPAREN c = expression RPAREN i = instruction
    { IIf (c, i, IBlock []) }
+
+| DOWHILE i = instruction WHILE LPAREN c = expression RPAREN SEMICOLON
+   { IDoWhile (i, c) }
 
 | WHILE LPAREN c = expression RPAREN i = instruction
    { IWhile (c, i) }

@@ -617,6 +617,11 @@ let instr2c
        fprintf out "while (%a) %a"
          (expr2c method_name class_info) c
          instr2c i
+      
+    | IDoWhile (i, c) ->
+       fprintf out "do %a while (%a);"
+         instr2c i
+         (expr2c method_name class_info) c
     
     | IFor (e1, e2, e3, i) ->
        fprintf out "for (%a; %a; %a) %a"

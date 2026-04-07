@@ -64,6 +64,7 @@ and instruction =
   | IBreak 
   | IContinue
   | IReturn of expression
+  | IDoWhile of instruction * expression
 
 and typ =
   | TypInt

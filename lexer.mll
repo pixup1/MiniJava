@@ -83,6 +83,7 @@ rule get_token = parse
   | "else"  { ELSE }
   | "while" { WHILE }
   | "for"   { FOR }
+  | "do"    { DOWHILE }
   | "break"  { BREAK }
   | "continue"  { CONTINUE }
   | integer as i
